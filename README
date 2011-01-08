@@ -1,0 +1,3 @@
+Magnificent Game Engine
+
+The purpose of this project is to make a higly reusable and versatile 2D game engine. It uses DirectX for graphics, FMOD for sound, and Box2D for physics.
