@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;G:\Dokumenter\Visual Studio 2008\Projects\Magnificent\Magnificent\public&quot;;&quot;E:\programfiler\FMOD SoundSystem\FMOD Programmers API Win32\api\inc&quot;;&quot;G:\Dokumenter\Visual Studio 2008\Projects\Magnificent\Box2D\Include&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\Magnificent\public&quot;;&quot;$(SolutionDir)\include\Box2D\include&quot;;&quot;$(SolutionDir)\include\FMOD&quot;;&quot;$(SolutionDir)\include\Box2D\&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;D3D_DEBUG_INFO"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -67,9 +67,8 @@
 			<Tool
 				Name="VCLibrarianTool"
 				LinkLibraryDependencies="true"
-				AdditionalDependencies="d3d9.lib d3dx9.lib dxguid.lib fmodex_vc.lib ShlwApi.lib"
 				OutputFile="$(IntDir)\$(ProjectName).lib"
-				AdditionalLibraryDirectories="&quot;E:\programfiler\FMOD SoundSystem\FMOD Programmers API Win32\api\lib&quot;;&quot;G:\Dokumenter\Visual Studio 2008\Projects\Magnificent\Magnificent\lib\Debug&quot;"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)\Magnificent\lib\Debug&quot;;&quot;$(SolutionDir)\lib&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -243,10 +242,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\public\render.h"
-				>
-			</File>
-			<File
 				RelativePath=".\public\smart_ptr.h"
 				>
 			</File>
@@ -267,6 +262,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\ClassDiagram1.cd"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

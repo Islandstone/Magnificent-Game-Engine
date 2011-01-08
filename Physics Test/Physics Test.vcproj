@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;G:\Dokumenter\Visual Studio 2008\Projects\Magnificent\Magnificent\public&quot;;&quot;E:\programfiler\FMOD SoundSystem\FMOD Programmers API Win32\api\inc&quot;;&quot;G:\Dokumenter\Visual Studio 2008\Projects\Magnificent\Box2D\Include&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\Magnificent\public&quot;;&quot;$(SolutionDir)\include\Box2D\include&quot;;&quot;$(SolutionDir)\include\FMOD&quot;;&quot;$(SolutionDir)\include\Box2D\&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -61,9 +61,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="&quot;Magnificent Engine.lib&quot; box2d.lib"
+				AdditionalDependencies="&quot;Magnificent Engine.lib&quot; box2d.lib d3d9.lib d3dx9.lib dxguid.lib fmodex_vc.lib ShlwApi.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;G:\Dokumenter\Visual Studio 2008\Projects\Magnificent\Magnificent\lib\Debug&quot;;&quot;E:\programfiler\FMOD SoundSystem\FMOD Programmers API Win32\api\lib&quot;;&quot;G:\Dokumenter\Visual Studio 2008\Projects\Magnificent\Magnificent\Debug&quot;;&quot;G:\Dokumenter\Visual Studio 2008\Projects\Magnificent\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)\lib&quot;;&quot;$(SolutionDir)\Magnificent\$(IntDir)&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -136,6 +136,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)\lib&quot;;&quot;$(SolutionDir)\Magnificent\$(IntDir)&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
