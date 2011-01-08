@@ -10,6 +10,7 @@ public:
     virtual void Destroy() = 0;
 
     virtual void Update() = 0;
+    virtual void Render() = 0;
     virtual void PostRender() = 0;
 
     virtual const String GetName() = 0;
@@ -22,6 +23,7 @@ public:
     virtual void Destroy() {}
 
     virtual void Update() {}
+    virtual void Render() {}
     virtual void PostRender() {}
 
     virtual const String GetName() { return String(L"---BASE---"); }

@@ -181,7 +181,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\public\gameinterface.cpp"
+				RelativePath=".\Engine\gameinterface.cpp"
 				>
 			</File>
 			<File
@@ -189,44 +189,8 @@
 				>
 			</File>
 			<File
-				RelativePath=".\public\log.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\Engine\main.cpp"
 				>
-			</File>
-			<File
-				RelativePath=".\Engine\physics.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\Renderer\render.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Sound\sound.cpp"
@@ -276,10 +240,6 @@
 			</File>
 			<File
 				RelativePath=".\public\log.h"
-				>
-			</File>
-			<File
-				RelativePath=".\public\physics.h"
 				>
 			</File>
 			<File

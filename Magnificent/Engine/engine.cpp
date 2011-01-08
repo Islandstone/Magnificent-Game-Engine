@@ -504,6 +504,15 @@ void CEngine::FrameAdvance()
 
     m_pGame->Render();
 
+    // Render game systems
+    for (unsigned int i = 0; i < m_vecGameSystems.size(); i++)
+    {
+        if (m_vecGameSystems[i] != NULL)
+        {
+            m_vecGameSystems[i]->Render();
+        }
+    }
+
     m_pGame->PostRender();
     PostRender();
 
@@ -709,17 +718,25 @@ void CEngine::OnLostDevice()
 
             res = pUnknown->QueryInterface(IID_ID3DXSprite, &pObject);
 
-            if (res == S_OK && pObject != NULL)
+            if (SUCCEEDED(res) && pObject != NULL)
             {
                 ID3DXSprite *pSprite = (ID3DXSprite *)pObject;
                 pSprite->OnLostDevice();
                 pSprite->Release();
                 continue;
             }
+
+            res = pUnknown->QueryInterface(IID_ID3DXLine, &pObject);
+
+            if (SUCCEEDED(res) && pObject != NULL)
+            {
+                ID3DXLine *pLine = (ID3DXLine *)pObject;
+                pLine->OnLostDevice();
+                pLine->Release();
+                continue;
+            }
         }
     }
-
-
 }
 
 void CEngine::OnResetDevice()

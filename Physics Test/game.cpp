@@ -14,7 +14,9 @@ CGame_Factory CGame_FactoryObject;
 bool CGame::Init()
 {
     Engine()->Debug(L"Loaded game Physics Test\n");
-    Engine()->AddGameSystem( new CPhysics() );
+    CPhysics *pPhysics = new CPhysics();
+    Engine()->AddGameSystem( pPhysics );
+    pPhysics->Init();
 
     return true;
 }
