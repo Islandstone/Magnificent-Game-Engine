@@ -4,6 +4,7 @@
 #include <d3d9.h>
 #include <d3dx9core.h>
 #include "smart_ptr.h"
+#include "base.h"
 
 class CClock
 {
@@ -29,7 +30,10 @@ private:
     float day_percentage;
     float month_percentage;
     CComPtr<IDirect3DVertexBuffer9> v_buffer;
+    CComPtr<ID3DXFont> m_pFont;
 
+    String m_sTimeString;
+    RECT rtText;
 };
 
 #endif // CLOCK_H

@@ -14,7 +14,8 @@ CClock *pClock = NULL;
 
 bool CGame::Init()
 {
-    Engine()->Debug(L"Loaded game Physics Test\n");
+    Engine()->Debug(L"Loaded clock\n");
+    Engine()->DisableSplashScreen();
 
     pClock = new CClock();
 

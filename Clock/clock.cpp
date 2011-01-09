@@ -1,6 +1,9 @@
 #include "clock.h"
 #include "base.h"
 #include "engine.h"
+#include <locale.h>
+#include <time.h>
+#include <algorithm>
 
 struct CUSTOMVERTEX {float x, y, z; DWORD color;};
 #define CUSTOMFVF (D3DFVF_XYZ | D3DFVF_DIFFUSE)
@@ -17,12 +20,65 @@ void CClock::Init(void)
         D3DPOOL_MANAGED,
         &v_buffer,
         NULL);
+
+    // Titillium or 7px2bus
+#if 0
+    std::locale::global(std::locale(""));
+
+    D3DXCreateFont(Engine()->GetDevice(),     //D3D Device
+    72,               //Font height
+    0,                //Font width
+    FW_NORMAL,        //Font Weight
+    1,                //MipLevels
+    false,            //Italic
+    DEFAULT_CHARSET,  //CharSet
+    OUT_DEFAULT_PRECIS, //OutputPrecision
+    ANTIALIASED_QUALITY, //Quality
+    DEFAULT_PITCH|FF_DONTCARE,//PitchAndFamily
+    L"TitilliumText25L-400wt",          //pFacename,
+    &m_pFont);         //ppFont
+
+#else
+    D3DXCreateFont(Engine()->GetDevice(),     //D3D Device
+        60,               //Font height
+        0,                //Font width
+        FW_NORMAL,        //Font Weight
+        1,                //MipLevels
+        false,            //Italic
+        DEFAULT_CHARSET,  //CharSet
+        OUT_DEFAULT_PRECIS, //OutputPrecision
+        ANTIALIASED_QUALITY, //Quality
+        DEFAULT_PITCH|FF_DONTCARE,//PitchAndFamily
+        L"7px2bus",          //pFacename,
+        &m_pFont);         //ppFont
+#endif
+
+    Engine()->AddObject(m_pFont);
+
+    
+    //OutputDebugStringA( std::locale().name().c_str() );
 }
 
 void CClock::Destroy()
 {
     Engine()->GetDevice()->SetFVF(NULL);
     v_buffer->Release();    // close and release the vertex buffer
+}
+
+tm TimeFromSystemTime(const SYSTEMTIME * pTime)
+{
+    struct tm tm;
+    memset(&tm, 0, sizeof(tm));
+
+    tm.tm_year = pTime->wYear - 1900;
+    tm.tm_mon = pTime->wMonth - 1;
+    tm.tm_mday = pTime->wDay;
+
+    tm.tm_hour = pTime->wHour;
+    tm.tm_min = pTime->wMinute;
+    tm.tm_sec = pTime->wSecond;
+
+    return tm;
 }
 
 void CClock::Think()
@@ -56,6 +112,14 @@ void CClock::Think()
     day_percentage = systime.wDay / (float)days_in_current_month;
 
     month_percentage = systime.wMonth / 12.0f;
+
+    wchar_t *pTemp = new wchar_t[256];
+
+    _wcsftime_l(pTemp, 256, L"%H:%M:%S\n%A %d. %B %Y", &TimeFromSystemTime(&systime), _get_current_locale() );
+    m_sTimeString = pTemp;
+    delete pTemp;
+
+    SetRect(&rtText, 0, (int)(Engine()->ScreenHeight() * 0.75f), (int)Engine()->ScreenWidth(), (int)(Engine()->ScreenHeight()) );
 }
 
 
@@ -135,11 +199,11 @@ void CClock::Render()
         D3DCOLOR_XRGB(255, 255,255),
     };
 
-    D3DXVECTOR3 center(0.0f, -40.0f, 0.0f);
+    float radius = Engine()->ScreenHeight() * (1.0f/3.0f);
+    float spacing = radius * 0.05f;
+    float width = radius * 0.1f;
 
-    float spacing = 15.0f;
-    float width = 30.0f;
-    float radius = 300.0f;
+    D3DXVECTOR3 center(0.0f, -radius * 0.35f, 0.0f);
 
     for (int i = 0; i < NUMBER_OF_RINGS; i++)
     {
@@ -149,24 +213,8 @@ void CClock::Render()
         DrawCircle(&center, inner, outer, amounts[i], color[i] );
     }
 
-#if 0
-
-    // Seconds
-    DrawCircle(NULL, 180.0f, 200.0f, seconds_percentage, D3DCOLOR_XRGB(255, 0, 0) );
-
-    // Minutes
-    DrawCircle(NULL, 150.0f, 170.0f, minutes_percentage, D3DCOLOR_XRGB(0, 255,0) );
-
-    // Hours
-    DrawCircle(NULL, 120.0f, 140.0f, hours_percentage, D3DCOLOR_XRGB(255, 255,0) );
-
-    // Day of the week
-    DrawCircle(NULL, 90.0f, 110.0f, week_percentage, D3DCOLOR_XRGB(0, 0,255) );
-
-    // Day of the month
-    DrawCircle(NULL, 60.0f, 80.0f, day_percentage, D3DCOLOR_XRGB(255, 0,255) );
-
-    // Month of the year
-    DrawCircle(NULL, 30.0f, 50.0f, month_percentage, D3DCOLOR_XRGB(255, 255,255) );
-#endif
+    if (m_pFont)
+    {
+        m_pFont->DrawText(NULL, m_sTimeString.c_str(), m_sTimeString.size(), &rtText, DT_CENTER, 0xffffffff );
+    }
 }

@@ -91,6 +91,8 @@ public:
     float ScreenWidth()             { return (float)m_iScreenX; }
     float ScreenHeight()            { return (float)m_iScreenY; }
 
+    void DisableSplashScreen() { m_bSplashScreenDisabled = true; }
+
 protected:
 
     // Various init functions
@@ -119,20 +121,21 @@ private:
     CComPtr<IDirect3DDevice9>       m_pd3ddev;
 
     // Splash screen resources
-    /*
-    CComPtr<ID3DXSprite>            m_pLogoSprite;
-    CComPtr<IDirect3DTexture9>      m_pLogoTexture;
-    CComPtr<ID3DXSprite>            m_pSplashSprite;
-    CComPtr<IDirect3DTexture9>      m_pSplashTexture;
-    */
-
     CSprite                         *m_pLogoSprite;
     CSprite                         *m_pSplashSprite;
     CSample                         *m_pStartupSound;
 
     // Handling splash screens
-    bool ShouldRenderSplashes()     { return m_iSplashCount < 2; }
-    
+    bool ShouldRenderSplashes()     
+    { 
+        if (m_bSplashScreenDisabled)
+            return false;
+        else if (m_iSplashCount < 2)
+            return false;
+        return true;
+    }
+
+    bool                            m_bSplashScreenDisabled;
     int                             m_iSplashCount;
     CFadeTimer                      m_tFadeTimer;
 

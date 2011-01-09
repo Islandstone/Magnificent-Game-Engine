@@ -32,6 +32,7 @@ CEngine::CEngine()
     m_hInstance = NULL;
     m_hwnd = NULL;  
 
+    m_bSplashScreenDisabled = false;
     g_sInstance = this;
 }
 
@@ -162,15 +163,20 @@ bool CEngine::InitDirect3D(bool fullscreen)
         }
     }
 
+    D3DDISPLAYMODE d3ddm;
+
+    m_pd3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT,
+        &d3ddm);
+
     D3DPRESENT_PARAMETERS window_params;
     ZeroMemory( &window_params, sizeof(D3DPRESENT_PARAMETERS) );
 
     window_params.BackBufferWidth         = m_iScreenX;
     window_params.BackBufferHeight        = m_iScreenY;
-    window_params.BackBufferFormat        = D3DFMT_UNKNOWN;
+    window_params.BackBufferFormat        = d3ddm.Format;
     window_params.BackBufferCount         = 1;
 
-    window_params.MultiSampleType         = D3DMULTISAMPLE_NONE; //D3DMULTISAMPLE_8_SAMPLES;
+    window_params.MultiSampleType         = D3DMULTISAMPLE_8_SAMPLES;
     window_params.MultiSampleQuality      = 0;
 
     window_params.SwapEffect              = D3DSWAPEFFECT_DISCARD;
@@ -191,8 +197,8 @@ bool CEngine::InitDirect3D(bool fullscreen)
     full_params.BackBufferFormat        = D3DFMT_A8R8G8B8;
     full_params.BackBufferCount         = 1;
 
-    full_params.MultiSampleType         = D3DMULTISAMPLE_NONE; //D3DMULTISAMPLE_8_SAMPLES;
-    full_params.MultiSampleQuality      = 0;
+    window_params.MultiSampleType         = D3DMULTISAMPLE_8_SAMPLES;
+    window_params.MultiSampleQuality      = 0;
 
     full_params.SwapEffect              = D3DSWAPEFFECT_DISCARD;
     full_params.hDeviceWindow           = m_hwnd;
@@ -281,15 +287,20 @@ bool CEngine::ResetDirect3D(bool fullscreen)
         return false;
     }
 
+    D3DDISPLAYMODE d3ddm;
+
+    m_pd3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT,
+        &d3ddm);
+
     D3DPRESENT_PARAMETERS window_params;
     ZeroMemory( &window_params, sizeof(D3DPRESENT_PARAMETERS) );
 
     window_params.BackBufferWidth         = m_iScreenX;
     window_params.BackBufferHeight        = m_iScreenY;
-    window_params.BackBufferFormat        = D3DFMT_UNKNOWN;
+    window_params.BackBufferFormat        = d3ddm.Format;
     window_params.BackBufferCount         = 1;
 
-    window_params.MultiSampleType         = D3DMULTISAMPLE_NONE; //D3DMULTISAMPLE_8_SAMPLES;
+    window_params.MultiSampleType         = D3DMULTISAMPLE_8_SAMPLES; //D3DMULTISAMPLE_8_SAMPLES;
     window_params.MultiSampleQuality      = 0;
 
     window_params.SwapEffect              = D3DSWAPEFFECT_DISCARD;
@@ -307,10 +318,10 @@ bool CEngine::ResetDirect3D(bool fullscreen)
 
     full_params.BackBufferWidth         = m_iScreenX;
     full_params.BackBufferHeight        = m_iScreenY;
-    full_params.BackBufferFormat        = D3DFMT_A8R8G8B8;
+    full_params.BackBufferFormat        = d3ddm.Format;
     full_params.BackBufferCount         = 1;
 
-    full_params.MultiSampleType         = D3DMULTISAMPLE_NONE; //D3DMULTISAMPLE_8_SAMPLES;
+    full_params.MultiSampleType         = D3DMULTISAMPLE_8_SAMPLES; //D3DMULTISAMPLE_8_SAMPLES;
     full_params.MultiSampleQuality      = 0;
 
     full_params.SwapEffect              = D3DSWAPEFFECT_DISCARD;
@@ -735,6 +746,16 @@ void CEngine::OnLostDevice()
                 ID3DXLine *pLine = (ID3DXLine *)pObject;
                 pLine->OnLostDevice();
                 pLine->Release();
+                continue;
+            }
+
+            res = pUnknown->QueryInterface(IID_ID3DXFont, &pObject);
+
+            if (SUCCEEDED(res) && pObject != NULL)
+            {
+                ID3DXFont *pFont = (ID3DXFont *)pObject;
+                pFont->OnLostDevice();
+                pFont->Release();
                 continue;
             }
         }
