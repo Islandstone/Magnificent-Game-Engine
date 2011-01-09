@@ -167,7 +167,7 @@ bool CEngine::InitDirect3D(bool fullscreen)
 
     window_params.BackBufferWidth         = m_iScreenX;
     window_params.BackBufferHeight        = m_iScreenY;
-    window_params.BackBufferFormat        = D3DFMT_A8R8G8B8;
+    window_params.BackBufferFormat        = D3DFMT_UNKNOWN;
     window_params.BackBufferCount         = 1;
 
     window_params.MultiSampleType         = D3DMULTISAMPLE_NONE; //D3DMULTISAMPLE_8_SAMPLES;
@@ -263,10 +263,12 @@ bool CEngine::InitDirect3D(bool fullscreen)
     m_pLogoSprite = new CSprite(L"logo.bmp");
     m_pSplashSprite = new CSprite(L"splash.bmp");
 
+    /*
     g_pCamera->SetPosition(0.0f,0.0f);
 
     m_pd3ddev->SetTransform( D3DTS_PROJECTION,  &g_pCamera->GetProjection() );
     m_pd3ddev->SetTransform( D3DTS_VIEW,        &g_pCamera->GetView() );
+    */
 
     return true;
 }
@@ -284,7 +286,7 @@ bool CEngine::ResetDirect3D(bool fullscreen)
 
     window_params.BackBufferWidth         = m_iScreenX;
     window_params.BackBufferHeight        = m_iScreenY;
-    window_params.BackBufferFormat        = D3DFMT_A8R8G8B8;
+    window_params.BackBufferFormat        = D3DFMT_UNKNOWN;
     window_params.BackBufferCount         = 1;
 
     window_params.MultiSampleType         = D3DMULTISAMPLE_NONE; //D3DMULTISAMPLE_8_SAMPLES;

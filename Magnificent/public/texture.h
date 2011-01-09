@@ -94,6 +94,11 @@ public:
 
     void Release(String name)
     {
+        if (m_vTextures.size() == 0)
+        {
+            return;
+        }
+
         vector<CTexture*>::iterator iter = m_vTextures.begin();
 
         while ( iter != m_vTextures.end() )
@@ -102,7 +107,7 @@ public:
 
             if (pTexture->GetName() == name)
             {
-                m_vTextures.erase( iter );
+                //m_vTextures.erase( iter );
                 delete pTexture;
                 break;
             }

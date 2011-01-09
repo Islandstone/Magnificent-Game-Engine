@@ -45,7 +45,7 @@
 #ifndef _COMPTR_H_
 #define _COMPTR_H_
 
-#define ASSERT(x) _ASSERT(x)
+#define ASSERT(x) /*_ASSERT(x)*/
 
 template<class _INTERFACE, const IID* piid = NULL>
 class CComPtr
