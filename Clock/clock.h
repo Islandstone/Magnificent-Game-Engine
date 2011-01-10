@@ -31,6 +31,7 @@ private:
     float month_percentage;
     CComPtr<IDirect3DVertexBuffer9> v_buffer;
     CComPtr<ID3DXFont> m_pFont;
+    CComPtr<ID3DXLine> m_pLine;
 
     String m_sTimeString;
     RECT rtText;
