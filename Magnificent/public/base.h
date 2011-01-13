@@ -5,11 +5,13 @@
 #define DEBUG
 #endif
 
+/*
 #ifdef DEBUG
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <crtdbg.h>
 #endif
+*/
 
 #include <string>
 
@@ -38,6 +40,16 @@
 
 #define Zap(x) if (x != NULL) {delete x; x = NULL;}
 #define ZapDX(x) if (x != NULL) { x->Release(); x = NULL;}
+
+
+#ifdef DEBUG
+
+#define PROFILE
+#define SHINY_PROFILER TRUE
+#define PROFILE_OUTPUT_FREQ 5.0f
+
+#endif
+
 
 // Global typedefs
 typedef std::wstring String;

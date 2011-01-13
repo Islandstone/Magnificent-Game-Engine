@@ -5,6 +5,7 @@
 #include <time.h>
 #include <algorithm>
 #include "camera.h"
+#include "Shiny.h"
 
 struct CUSTOMVERTEX {float x, y, z; DWORD color;};
 #define CUSTOMFVF (D3DFVF_XYZ | D3DFVF_DIFFUSE)
@@ -132,6 +133,9 @@ void CClock::Think()
 
 void CClock::DrawCircle( D3DXVECTOR3 *center, const float inner_radius, const float outer_radius, float amount, DWORD color )
 {
+    PROFILE_FUNC();
+
+    PROFILE_BEGIN( SetTransform );
     // First set the transform
     if (center != NULL)
     {
@@ -140,11 +144,14 @@ void CClock::DrawCircle( D3DXVECTOR3 *center, const float inner_radius, const fl
 
         Engine()->GetDevice()->SetTransform(D3DTS_WORLD, &mat);
     }
+    PROFILE_END();
 
     CUSTOMVERTEX* vertices;
 
+    PROFILE_BEGIN( Lock );
     // lock v_buffer and load the vertices into it
     v_buffer->Lock(0, 0, (void**)&vertices, 0);
+    PROFILE_END();
 
     float wedge_angle = amount * 360.0f;
 
@@ -157,6 +164,7 @@ void CClock::DrawCircle( D3DXVECTOR3 *center, const float inner_radius, const fl
     if (segments == 0)
         segments = 1;
 
+    PROFILE_BEGIN( Loop );
     for (int i = 0; i <= segments; i++)
     {
         float angle = wedge_angle * ((float)i/(float)segments);
@@ -175,17 +183,25 @@ void CClock::DrawCircle( D3DXVECTOR3 *center, const float inner_radius, const fl
         vertices[num].z = 0.5f;
         vertices[num].color = color;
     }
+    PROFILE_END();
 
+    PROFILE_BEGIN( Unlock );
     v_buffer->Unlock();
+    PROFILE_END();
 
     Engine()->GetDevice()->SetFVF(CUSTOMFVF);
     Engine()->GetDevice()->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
+
+    PROFILE_BEGIN( DrawPrimitive );
     Engine()->GetDevice()->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, num-2 + 1); // +1 because num is 0 based
+    PROFILE_END();
 }
 
 
 void CClock::Render()
 {
+    PROFILE_FUNC();
+
 #define NUMBER_OF_RINGS 3
     float amounts[] = {
         seconds_percentage,

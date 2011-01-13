@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)\Magnificent\public&quot;;&quot;$(SolutionDir)\include\Box2D\include&quot;;&quot;$(SolutionDir)\include\FMOD&quot;;&quot;$(SolutionDir)\include\Box2D\&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\Magnificent\public&quot;;&quot;$(SolutionDir)\include\Box2D\include&quot;;&quot;$(SolutionDir)\include\FMOD&quot;;&quot;$(SolutionDir)\include\Box2D\&quot;;&quot;$(SolutionDir)\include\Shiny\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -61,7 +61,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="&quot;Magnificent Engine.lib&quot; box2d.lib d3d9.lib d3dx9.lib dxguid.lib ShlwApi.lib fmodex_vc.lib"
+				AdditionalDependencies="&quot;Magnificent Engine.lib&quot; box2d.lib d3d9.lib d3dx9.lib dxguid.lib ShlwApi.lib fmodex_vc.lib ShinyDebug.lib"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)\lib&quot;;&quot;$(SolutionDir)\Magnificent\$(IntDir)&quot;"
 				IgnoreDefaultLibraryNames=""

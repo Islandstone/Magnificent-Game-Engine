@@ -1,4 +1,7 @@
 #include "base.h"
+
+#include "Shiny.h"
+
 #include "engine.h"
 #include "dx_error_check.h"
 #include "timer.h"
@@ -248,33 +251,8 @@ bool CEngine::InitDirect3D(bool fullscreen)
         return false;
     }
 
-    /*
-    if (    FAILED( D3DXCreateSprite( m_pd3ddev, &m_pLogoSprite ) )
-        ||  FAILED( D3DXCreateTextureFromFile( m_pd3ddev, L"logo.bmp", &m_pLogoTexture) )
-        ||  FAILED( D3DXCreateTextureFromFile( m_pd3ddev, L"splash.bmp", &m_pSplashTexture) ) 
-        ||  FAILED( D3DXCreateSprite( m_pd3ddev, &m_pSplashSprite) )
-        )       
-    {
-        Debug(L"Failed to create sprites/load textures for logo or splash");
-    }
-    else
-    {   
-        AddObject(m_pLogoSprite);
-        AddObject(m_pLogoTexture);
-        AddObject(m_pSplashSprite);
-        AddObject(m_pSplashTexture);
-    }
-    */
-
     m_pLogoSprite = new CSprite(L"logo.bmp");
     m_pSplashSprite = new CSprite(L"splash.bmp");
-
-    /*
-    g_pCamera->SetPosition(0.0f,0.0f);
-
-    m_pd3ddev->SetTransform( D3DTS_PROJECTION,  &g_pCamera->GetProjection() );
-    m_pd3ddev->SetTransform( D3DTS_VIEW,        &g_pCamera->GetView() );
-    */
 
     return true;
 }
@@ -408,6 +386,8 @@ void CEngine::Start()
         g_pGlobalTimer->Start();
     }
 
+    m_tProfileTimer.Start();
+
     Main();
 }
 
@@ -433,9 +413,24 @@ void CEngine::Main()
                 continue;
             }
 
+            PROFILE_BEGIN( Frame );
             FrameAdvance();
+            PROFILE_END();
+
+            PROFILER_UPDATE();
+
+            if (m_tProfileTimer.CurrentTime() >= PROFILE_OUTPUT_FREQ)
+            {
+                OutputDebugStringA( PROFILER_OUTPUT_TREE_STRING().c_str() );
+                //OutputDebugStringA( PROFILER_OUTPUT_FLAT_STRING().c_str() );
+                OutputDebugStringA("\n");
+                m_tProfileTimer.Reset();
+                m_tProfileTimer.Start();
+            }
+
 
             // Try not to kill the computer we're running on
+            // TODO: Add a proper time burn
             Sleep(10);
         }
 
@@ -450,6 +445,7 @@ void CEngine::Stop()
 
 void CEngine::FrameAdvance()
 {
+    PROFILE_BEGIN( GameSystemsUpdate );
     // Update game systems
     for (unsigned int i = 0; i < m_vecGameSystems.size(); i++)
     {
@@ -457,26 +453,26 @@ void CEngine::FrameAdvance()
         {
             m_vecGameSystems[i]->Update();
         }
-#ifdef DEBUG
-        else
-        {
-            // NULL pointer to game system in vector should never happen
-            DebugBreak();
-        }
-#endif
     }
+    PROFILE_END();
 
     if ( ShouldRenderSplashes() )
     {
         // Using a delay timer so the engine doesn't pop when startin
         if (g_bPastInitDelay)
         {
+            PROFILE_BEGIN( PreRender );
             PreRender();
+            PROFILE_END();
             if (IsActive())
             {
+                PROFILE_BEGIN( RenderSplashScreens );
                 RenderSplashScreens();
+                PROFILE_END();
             }
+            PROFILE_BEGIN( PostRender );
             PostRender();
+            PROFILE_END();
         }
         else
         {
@@ -503,20 +499,42 @@ void CEngine::FrameAdvance()
         return;
     }
 
-    m_pGame->PreThink();
-    m_pGame->Think();
-    m_pGame->PostThink();
+    PROFILE_BEGIN( GameThinkRoot );
+        PROFILE_BEGIN( GamePreThink );
+            m_pGame->PreThink();
+        PROFILE_END();
+        PROFILE_BEGIN( GameThink );
+            m_pGame->Think();
+        PROFILE_END();
+        PROFILE_BEGIN( GamePostThink );
+            m_pGame->PostThink();
+        PROFILE_END();
+    PROFILE_END();
 
     if ( g_pInput->KeyReleased( VK_F2 ) )
     {
         ChangeWindow();
     }
 
+    PROFILE_BEGIN( PreRenderRoot );
+    
+    PROFILE_BEGIN( EnginePreRender );
     PreRender();
+    PROFILE_END();
+
+    PROFILE_BEGIN( GamePreRender );
     m_pGame->PreRender();
+    PROFILE_END();
 
+    PROFILE_END();
+
+    PROFILE_BEGIN( RenderRoot );
+
+    PROFILE_BEGIN( GameRender );
     m_pGame->Render();
+    PROFILE_END();
 
+    PROFILE_BEGIN( GameSystemsRender );
     // Render game systems
     for (unsigned int i = 0; i < m_vecGameSystems.size(); i++)
     {
@@ -525,10 +543,19 @@ void CEngine::FrameAdvance()
             m_vecGameSystems[i]->Render();
         }
     }
+    PROFILE_END(); // GameSystemsRender
 
+    PROFILE_END(); // Render root
+
+    PROFILE_BEGIN( PostRenderRoot );
+    PROFILE_BEGIN( GamePostRender );
     m_pGame->PostRender();
+    PROFILE_END();
+    PROFILE_BEGIN( EnginePostRender );
     PostRender();
-
+    PROFILE_END();
+    
+    PROFILE_BEGIN( GameSystemsPostRender );
     // PostRender game systems
     for (unsigned int i = 0; i < m_vecGameSystems.size(); i++)
     {
@@ -537,6 +564,9 @@ void CEngine::FrameAdvance()
             m_vecGameSystems[i]->PostRender();
         }
     }
+    PROFILE_END();
+
+    PROFILE_END(); // Post render root
 }
 
 void CEngine::PreRender()

@@ -139,6 +139,8 @@ private:
     int                             m_iSplashCount;
     CFadeTimer                      m_tFadeTimer;
 
+    CTimer                          m_tProfileTimer;
+
     // Window(s) properties
     HINSTANCE                       m_hInstance;
     HWND                            m_hwnd;
