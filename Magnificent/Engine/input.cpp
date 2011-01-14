@@ -2,6 +2,7 @@
 #include "input.h"
 #include <windows.h>
 
+#pragma deprecated( g_pInput )
 CInput *g_pInput = NULL;
 
 CInput::CInput()

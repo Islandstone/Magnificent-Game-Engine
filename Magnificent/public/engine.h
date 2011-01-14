@@ -30,9 +30,17 @@ using namespace std;
 
 class CEngine 
 {
-public:
+private:
     CEngine();
     //~CEngine();
+
+public:
+    // Singleton accessor for the engine
+    static CEngine* GetInstance()
+    {
+        static CEngine engine;
+        return &engine;
+    }
 
     // Startup/Shutdown
     bool Init( HINSTANCE hInstance );
@@ -160,7 +168,7 @@ extern CEngine* g_sInstance;
 
 extern inline CEngine* Engine()
 {
-    return g_sInstance;
+    return CEngine::GetInstance();
 }
 
 #endif // ENGINE_H

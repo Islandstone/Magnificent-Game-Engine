@@ -4,6 +4,7 @@
 #include "fmod.hpp"
 #include "input.h"
 
+#pragma deprecated( g_pSound )
 CSoundSystem *g_pSound = NULL;
 
 using namespace FMOD;
@@ -16,20 +17,6 @@ String FMOD_ErrorString(FMOD_RESULT errcode);
 #define ERRCHECK(x) if (x != FMOD_OK) { Engine()->Error( FMOD_ErrorString(x) ); return false; }
 #endif
 
-
-/*
-inline bool ERRCHECK(FMOD_RESULT res)
-{
-    if (x != FMOD_OK) 
-    { 
-        Engine()->FatalError( FMOD_ErrorString(x) ); 
-        return false; 
-    }
-
-    return true;
-}
-*/
-
 CSoundSystem::CSoundSystem()
 {
     g_pSound = this;
@@ -40,6 +27,11 @@ CSoundSystem::CSoundSystem()
 
 bool CSoundSystem::Init()
 {
+    /*
+    *   Large portions of this code is based on the initialization code
+    *   provided with the FMOD installation
+    */
+
     FMOD_RESULT      result;
     unsigned int     version;
     int              numdrivers;
@@ -200,7 +192,6 @@ void CSoundSystem::Update()
     {
         FMOD_RESULT res;
         float curtime = g_pGlobalTimer->CurrentTime();
-        //Engine()->Debug(L"Decreasing volume\n");
 
         FMOD::ChannelGroup *pChannelGroup;
         res = m_pSystem->getMasterChannelGroup(&pChannelGroup);

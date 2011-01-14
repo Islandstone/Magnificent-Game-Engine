@@ -4,6 +4,8 @@
 #define WINDOWS_LEAN_AND_MEAN
 #include <Windows.h>
 
+#pragma deprecated( g_pGlobalTimer )
+
 CTimer _globaltimer;
 CTimer *g_pGlobalTimer = &_globaltimer;
 

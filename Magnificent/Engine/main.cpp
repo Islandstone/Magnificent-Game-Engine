@@ -1,6 +1,5 @@
 #include "base.h"
 
-//#define NOGDI
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -58,7 +57,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
     current_dir.clear();
 
-    CEngine *pEngine = new CEngine();
+    //CEngine *pEngine = new CEngine();
+    CEngine *pEngine = CEngine::GetInstance();
 
     if ( pEngine->Init(hInstance) )
     {
@@ -67,7 +67,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
     pEngine->Stop();
 
-    delete pEngine;
+    //delete pEngine;
 
     _CrtDumpMemoryLeaks();
     return 0;

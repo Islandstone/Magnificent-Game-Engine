@@ -4,8 +4,15 @@
 class CTimer
 {
 public:
-
     CTimer(bool locked = false);
+
+    // This is only a singleton for the global timer.
+    // User code may create CTimer objects as they wish if neccessary
+    static CTimer* GlobalTimer()
+    {
+        static CTimer globalTimer;
+        return &globalTimer;
+    }
 
     virtual void Start();
     float CurrentTime();

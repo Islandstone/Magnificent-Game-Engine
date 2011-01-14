@@ -61,8 +61,6 @@ bool CEngine::Init( HINSTANCE hInstance )
         m_pGame->Init();
     }
 
-    //static TCHAR szAppName[] = TEXT ("Magnificent");
-
     WNDCLASSEX   wndclassex = {0};
 
     wndclassex.cbSize        = sizeof(WNDCLASSEX);
@@ -166,6 +164,8 @@ bool CEngine::InitDirect3D(bool fullscreen)
         }
     }
 
+    //EnumerateDisplayMode();
+
     D3DDISPLAYMODE d3ddm;
 
     m_pd3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT,
@@ -241,6 +241,7 @@ bool CEngine::InitDirect3D(bool fullscreen)
         return false;
     }
 
+    // TODO: Extract this into a separate function SetDefaultSettings();
     if ( FAILED( m_pd3ddev->SetRenderState(D3DRS_LIGHTING, FALSE) ) || 
         FAILED( m_pd3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE) ) ||
         FAILED( m_pd3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA) ) ||
@@ -288,7 +289,7 @@ bool CEngine::ResetDirect3D(bool fullscreen)
     window_params.AutoDepthStencilFormat  = D3DFMT_D32;
     window_params.Flags = 0;
 
-    window_params.FullScreen_RefreshRateInHz = 0; /* FullScreen_RefreshRateInHz must be zero for Windowed mode */
+    window_params.FullScreen_RefreshRateInHz = 0; // Always 0 for windowed mode
     window_params.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 
     D3DPRESENT_PARAMETERS full_params;
@@ -299,7 +300,7 @@ bool CEngine::ResetDirect3D(bool fullscreen)
     full_params.BackBufferFormat        = d3ddm.Format;
     full_params.BackBufferCount         = 1;
 
-    full_params.MultiSampleType         = D3DMULTISAMPLE_8_SAMPLES; //D3DMULTISAMPLE_8_SAMPLES;
+    full_params.MultiSampleType         = D3DMULTISAMPLE_8_SAMPLES;
     full_params.MultiSampleQuality      = 0;
 
     full_params.SwapEffect              = D3DSWAPEFFECT_DISCARD;
@@ -309,21 +310,26 @@ bool CEngine::ResetDirect3D(bool fullscreen)
     full_params.AutoDepthStencilFormat  = D3DFMT_D32;
     full_params.Flags = 0;
 
-    full_params.FullScreen_RefreshRateInHz = 60; /* FullScreen_RefreshRateInHz must be zero for Windowed mode */
+    // TODO: Add enumeration for this option
+    full_params.FullScreen_RefreshRateInHz = 60;
     full_params.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 
+    // Select params based on fullscreen setting
     D3DPRESENT_PARAMETERS params = fullscreen ? full_params : window_params;
 
+    // Set multisampling quality to highest setting if available
     DWORD qualityLevel;
     if( FAILED(m_pd3d->CheckDeviceMultiSampleType( D3DADAPTER_DEFAULT, 
         D3DDEVTYPE_HAL, params.BackBufferFormat, 
         params.Windowed, params.MultiSampleType, &qualityLevel ) ) )
     {
+        // Not available
         params.MultiSampleType      = D3DMULTISAMPLE_NONE;
         params.MultiSampleQuality   = 0;
     }
     else
     {
+        // Available, max setting is qualityLevel-1
         params.MultiSampleQuality = (int)qualityLevel - 1;
     }
 
@@ -721,14 +727,6 @@ LRESULT CALLBACK CEngine::MessagePump(HWND hwnd, UINT message, WPARAM wParam, LP
         }
 
         return (0);
-
-#ifdef PAINTTEST
-    case WM_PAINT:
-        hdc = BeginPaint (hwnd, &ps);
-        TextOut(hdc, 10, 10, text.c_str(), text.size() );
-        EndPaint (hwnd, &ps);
-        return (0);
-#endif
     
     case WM_CLOSE:
     case WM_DESTROY:
@@ -814,6 +812,26 @@ void CEngine::OnResetDevice()
                 pSprite->Release();
                 continue;
             }
+
+            res = pUnknown->QueryInterface(IID_ID3DXLine, &pObject);
+
+            if (SUCCEEDED(res) && pObject != NULL)
+            {
+                ID3DXLine *pLine = (ID3DXLine *)pObject;
+                pLine->OnResetDevice();
+                pLine->Release();
+                continue;
+            }
+
+            res = pUnknown->QueryInterface(IID_ID3DXFont, &pObject);
+
+            if (SUCCEEDED(res) && pObject != NULL)
+            {
+                ID3DXFont *pFont = (ID3DXFont *)pObject;
+                pFont->OnResetDevice();
+                pFont->Release();
+                continue;
+            }
         }
 
     }
@@ -849,12 +867,6 @@ void CEngine::Destroy()
 
             Zap(m_vecGameSystems[i]);
         }
-#ifdef DEBUG
-        else
-        {
-            OutputDebugString(L"Null pointer in game systems vector\n");
-        }
-#endif
     }
 
     m_vecGameSystems.clear();
@@ -902,41 +914,14 @@ void CEngine::RenderSplashScreens()
     {
         if (!m_tFadeTimer.IsStarted())
         {
-            /*
-            D3DXMATRIX projectionMatrix;
-            D3DXMATRIX viewMatrix;
-
-            D3DXMatrixOrthoOffCenterLH(&projectionMatrix,
-                (float)m_iScreenX*0.5f, (float)m_iScreenX*0.5f,
-                (float)m_iScreenY*0.5f, -(float)m_iScreenY*0.5f,
-                0.0f, 10.0f);
-
-            //D3DXMatrixOrthoLH(&projectionMatrix, (float)m_iScreenX*0.5f, (float)m_iScreenY*0.5f, 0.0f, 10.0f);
-            m_pd3ddev->SetTransform( D3DTS_PROJECTION, &projectionMatrix);
-
-            // Set the camera's view matrix
-            D3DXVECTOR3 eye(0.0f, 0.0f, -1.0f);
-            D3DXVECTOR3 at(0.0f, 0.0f, 0.0f);
-
-            // Assumes that the up vector is along the y-axis, ie. x is to the right and z is downwards/inwards
-            D3DXMatrixLookAtLH(&viewMatrix, &eye, &at, &D3DXVECTOR3(0.0f,1.0f,0.0f));
-            m_pd3ddev->SetTransform( D3DTS_VIEW, &viewMatrix);
-            */
-
             m_pStartupSound = g_pSound->CreateSample(L"startup.wav");
             m_pStartupSound->Play();
 
             m_tFadeTimer.Start();
         }
 
-        if (m_pLogoSprite != NULL /*&& m_pLogoTexture != NULL*/)
+        if (m_pLogoSprite != NULL)
         {
-            /*
-            m_pLogoSprite->Begin( 0 );
-            D3DCOLOR clr = D3DCOLOR_ARGB( 255, (int)(255.0f*m_tFadeTimer.GetModifier()), (int)(255.0f*m_tFadeTimer.GetModifier()), (int)(255.0f*m_tFadeTimer.GetModifier()) );
-            m_pLogoSprite->Draw(m_pLogoTexture, NULL, &center, &position, clr );
-            m_pLogoSprite->End();
-            */
             m_pLogoSprite->SetRenderColorUniform( (int)(255 * m_tFadeTimer.GetModifier()) );
             m_pLogoSprite->Render();
         }
@@ -956,13 +941,8 @@ void CEngine::RenderSplashScreens()
         }
 
 
-        if (m_pSplashSprite != NULL /*&& m_pSplashTexture != NULL*/)
+        if (m_pSplashSprite != NULL)
         {
-            /*
-            m_pSplashSprite->Begin( 0 );
-                        D3DCOLOR clr = D3DCOLOR_ARGB( 255, (int)(255.0f*m_tFadeTimer.GetModifier()), (int)(255.0f*m_tFadeTimer.GetModifier()), (int)(255.0f*m_tFadeTimer.GetModifier()) );
-                        m_pSplashSprite->Draw(m_pSplashTexture, NULL, &center, &position, clr );
-                        m_pSplashSprite->End();*/
             m_pSplashSprite->SetRenderColorUniform( (int)(255 * m_tFadeTimer.GetModifier()) );
             m_pSplashSprite->Render();
         }

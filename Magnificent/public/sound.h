@@ -16,6 +16,12 @@ class CSoundSystem : public CGameSystem
 public:
     CSoundSystem();
 
+    static CSoundSystem* GetInstance()
+    {
+        static CSoundSystem soundSystem;
+        return &soundSystem;
+    }
+
     bool Init();
     void Destroy();
 

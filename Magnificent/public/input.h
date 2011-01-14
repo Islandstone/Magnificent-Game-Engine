@@ -8,6 +8,12 @@ class CInput : public CGameSystem
 public:
     CInput();
 
+    static CInput* GetInstance()
+    {
+        static CInput input;
+        return &input;
+    }
+
     bool Init() { return true; }
     void Destroy() {}
 
