@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\Engine\$(ConfigurationName)"
+			IntermediateDirectory="Engine\$(ConfigurationName)"
 			ConfigurationType="4"
 			CharacterSet="1"
 			WholeProgramOptimization="0"
@@ -43,7 +43,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)\Magnificent\public&quot;;&quot;$(SolutionDir)\include\Box2D\include&quot;;&quot;$(SolutionDir)\include\FMOD&quot;;&quot;$(SolutionDir)\include\Box2D\&quot;;&quot;$(SolutionDir)\include\Shiny\include&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;D3D_DEBUG_INFO"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;D3D_DEBUG_INFO;ENABLE_FMOD"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -66,7 +66,8 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				LinkLibraryDependencies="true"
+				LinkLibraryDependencies="false"
+				AdditionalDependencies="fmodex_vc.lib"
 				OutputFile="$(IntDir)\$(ProjectName).lib"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)\Magnificent\lib\Debug&quot;;&quot;$(SolutionDir)\lib&quot;"
 			/>
@@ -168,10 +169,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\Engine\camera.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\Engine\engine.cpp"
 				>
 			</File>
@@ -189,6 +186,10 @@
 			</File>
 			<File
 				RelativePath=".\Engine\main.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Engine\MemMgr.cpp"
 				>
 			</File>
 			<File
@@ -239,6 +240,10 @@
 			</File>
 			<File
 				RelativePath=".\public\log.h"
+				>
+			</File>
+			<File
+				RelativePath=".\public\MemMgr.h"
 				>
 			</File>
 			<File

@@ -17,7 +17,7 @@
 	</ToolFiles>
 	<Configurations>
 		<Configuration
-			Name="Debug|Win32"
+			Name="Debug - Win7|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)\Magnificent\public&quot;;&quot;$(SolutionDir)\include\Box2D\include&quot;;&quot;$(SolutionDir)\include\FMOD&quot;;&quot;$(SolutionDir)\include\Box2D\&quot;;&quot;$(SolutionDir)\include\Shiny\include&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SCREENSAVER;D3D_DEBUG_INFO"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -61,9 +61,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="&quot;Magnificent Engine.lib&quot; box2d.lib d3d9.lib d3dx9.lib dxguid.lib ShlwApi.lib fmodex_vc.lib ShinyDebug.lib"
+				AdditionalDependencies="&quot;Magnificent Screensaver.lib&quot; box2d.lib d3d9.lib d3dx9.lib dxguid.lib ShlwApi.lib ShinyDebug.lib ComCtl32.lib ScrnSavw.lib"
+				OutputFile="$(OutDir)\$(ProjectName).scr"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(SolutionDir)\lib&quot;;&quot;$(SolutionDir)\Magnificent\$(IntDir)&quot;"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)\lib&quot;;&quot;$(SolutionDir)\Magnificent\Screensaver\Debug&quot;"
 				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -118,6 +119,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\Magnificent\public&quot;;&quot;$(SolutionDir)\include\Box2D\include&quot;;&quot;$(SolutionDir)\include\FMOD&quot;;&quot;$(SolutionDir)\include\Box2D\&quot;;&quot;$(SolutionDir)\include\Shiny\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -136,12 +138,89 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="&quot;Magnificent Screensaver.lib&quot; d3d9.lib d3dx9.lib dxguid.lib ShlwApi.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)\lib&quot;;&quot;$(SolutionDir)\Magnificent\$(IntDir)&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug - XP|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\Magnificent\public&quot;;&quot;$(SolutionDir)\include\Box2D\include&quot;;&quot;$(SolutionDir)\include\FMOD&quot;;&quot;$(SolutionDir)\include\Box2D\&quot;;&quot;$(SolutionDir)\include\Shiny\include&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SCREENSAVER;D3D_DEBUG_INFO"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="1"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				DebugInformationFormat="4"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="&quot;Magnificent Screensaver.lib&quot; d3d9.lib d3dx9.lib dxguid.lib ShlwApi.lib ShinyDebug.lib ComCtl32.lib ScrnSavw.lib"
+				OutputFile="$(OutDir)\$(ProjectName).scr"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)\lib&quot;;&quot;$(SolutionDir)\Magnificent\Screensaver\Debug&quot;;&quot;$(SolutionDir)\lib\xp&quot;"
+				IgnoreDefaultLibraryNames=""
+				GenerateDebugInformation="true"
+				SubSystem="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -183,6 +262,10 @@
 				RelativePath=".\game.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\IniFile.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -195,6 +278,10 @@
 			</File>
 			<File
 				RelativePath=".\game.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IniFile.h"
 				>
 			</File>
 		</Filter>

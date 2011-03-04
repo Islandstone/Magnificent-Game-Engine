@@ -15,6 +15,7 @@ public:
     ~CSprite() 
     {
         g_pTextureLoader->Release(m_strFilename);
+        m_strFilename.clear();
     }
 
     void SetTexture(String texturename);

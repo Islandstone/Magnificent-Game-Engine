@@ -5,9 +5,9 @@
 
 class CInput : public CGameSystem
 {
-public:
     CInput();
-
+public:
+    
     static CInput* GetInstance()
     {
         static CInput input;
@@ -38,7 +38,10 @@ private:
     char m_szKeyBuffer2[255];
 };
 
-extern CInput* g_pInput;
+extern inline CInput* Input()
+{
+    return CInput::GetInstance();
+}
 
 #define VK_0			0x30 	// 0 key
 #define VK_1			0x31 	// 1 key

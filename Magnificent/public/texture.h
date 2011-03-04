@@ -27,6 +27,8 @@ public:
             m_pTexture->Release();
             m_pTexture = NULL;
         }
+
+        m_sName.clear();
     }
 
     friend CTextureLoader;

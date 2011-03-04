@@ -9,7 +9,6 @@
 class CClock
 {
 public:
-
     void Init();
 
     void Think();
@@ -19,22 +18,24 @@ public:
 
 protected:
 
-    void DrawCircle(D3DXVECTOR3 *center, const float inner_radius, const float outer_radius, float amount, DWORD color );
+    void DrawCircle(D3DXVECTOR3 *center, const float inner_radius, const float outer_radius, float amount, bool reversed, DWORD color );
 
 private:
 
-    float seconds_percentage;
-    float minutes_percentage;
-    float hours_percentage;
-    float week_percentage;
-    float day_percentage;
-    float month_percentage;
-    CComPtr<IDirect3DVertexBuffer9> v_buffer;
+    float m_flSecondsPercent;
+    float m_flMinutesPercent;
+    float m_flHoursPercent;
+    float m_flWeekPercent;
+    float m_flDayPercent;
+    float m_flMonthPercent;
+    
+    String m_sTimeString;
+    RECT m_rtText;
+
+    CComPtr<IDirect3DVertexBuffer9> m_vertexBuffer;
+
     CComPtr<ID3DXFont> m_pFont;
     CComPtr<ID3DXLine> m_pLine;
-
-    String m_sTimeString;
-    RECT rtText;
 };
 
 #endif // CLOCK_H

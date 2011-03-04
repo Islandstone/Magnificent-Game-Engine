@@ -1,10 +1,12 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#pragma deprecated( g_pCamera )
+
 #include "base.h"
 #include "engine.h"
 
-class Camera
+class CCamera
 {
 private:
     D3DXMATRIX  m_pViewMatrix;
@@ -14,11 +16,8 @@ private:
 
     float m_flMaxZoom;
     float m_flMinZoom;
-    //float m_flRectWidth;
-    //float m_flRectHeight;
 
-public:
-    Camera(void)
+    CCamera(void)
     {
         m_vecCameraPosition = D3DXVECTOR2(0.0f,0.0f);
         m_flZoom = 1.0;
@@ -27,8 +26,13 @@ public:
         //m_flRectWidth = ;
         //m_flRectHeight = WINDOW_Y;
     }
-
-    ~Camera(void){}
+public:
+    
+    static CCamera* GetInstance() 
+    {
+        static CCamera camera;
+        return &camera;
+    }
 
     inline void SetZoomRange(float min = 100.0, float max = 0.0) { m_flMaxZoom = max; m_flMinZoom = min; }
 
@@ -63,7 +67,7 @@ public:
         D3DXMatrixOrthoOffCenterLH(&this->m_pProjectionMatrix,
             -halfWidth / m_flZoom , halfWidth / m_flZoom,
             halfHeight / m_flZoom, -halfHeight / m_flZoom,
-            m_flMaxZoom, m_flMinZoom);
+            0, 1000);
 
         // Set the camera's view matrix
         D3DXVECTOR3 eye(this->m_vecCameraPosition.x, this->m_vecCameraPosition.y, -m_flZoom );
@@ -92,6 +96,9 @@ public:
     inline void SetY(float new_y) { m_vecCameraPosition.y = new_y; }
 };
 
-extern Camera* g_pCamera;
+extern inline CCamera* Camera()
+{
+    return CCamera::GetInstance();
+}
 
 #endif // CAMERA_H

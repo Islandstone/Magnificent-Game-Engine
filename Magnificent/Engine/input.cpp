@@ -2,13 +2,8 @@
 #include "input.h"
 #include <windows.h>
 
-#pragma deprecated( g_pInput )
-CInput *g_pInput = NULL;
-
 CInput::CInput()
 {
-    g_pInput = this;
-
     m_pCurrentState = m_szKeyBuffer1;
     m_pPreviousState = m_szKeyBuffer2;
 

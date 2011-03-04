@@ -12,10 +12,22 @@
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
 
+#include "Dxerr.h"
+#pragma comment(lib, "Dxerr.lib" )
+
 CEngine* g_sInstance = NULL;
 bool     g_bActive = true;
 bool     g_bPastInitDelay = false;
 bool     g_bChangingWindow = false;
+
+bool IsVistaOrWin7OrLater() {
+    DWORD version = GetVersion();
+    DWORD major = (DWORD) (LOBYTE(LOWORD(version)));
+    DWORD minor = (DWORD) (HIBYTE(LOWORD(version)));
+
+    return (major > 6) || ((major == 6) && (minor >= 0));
+}
+
 
 CEngine::CEngine()
 {
@@ -29,6 +41,7 @@ CEngine::CEngine()
     m_iSplashCount = 0;
 
     m_pd3d = NULL;
+    m_pd3ddev = NULL;
 
     m_bActive = true;
 
@@ -65,7 +78,7 @@ bool CEngine::Init( HINSTANCE hInstance )
 
     wndclassex.cbSize        = sizeof(WNDCLASSEX);
     wndclassex.style         = CS_HREDRAW | CS_VREDRAW;
-    wndclassex.lpfnWndProc   = &MessagePump;
+    wndclassex.lpfnWndProc   = &WndProc;
     wndclassex.cbClsExtra    = 0;
     wndclassex.cbWndExtra    = 0;
     wndclassex.hInstance     = m_hInstance;
@@ -83,16 +96,47 @@ bool CEngine::Init( HINSTANCE hInstance )
         return false;
     }
 
-    if ( !InitWindow(SCREEN_SIZE_X, SCREEN_SIZE_Y, FULLSCREEN) )
+    if (IsScreenSaver())
     {
-        Error(L"Failed to create window!");
-        return false;
-    }
+        
+        int screen_x = GetSystemMetrics( SM_CXSCREEN );
+        int screen_y = GetSystemMetrics( SM_CYSCREEN );
+        bool fullscreen = true; //!IsVistaOrWin7OrLater();
 
-    if ( !InitDirect3D(FULLSCREEN) )
+        //Message(fullscreen ? L"Fullscreen" : L"Windowed" );
+
+        if (!screen_x || !screen_y)
+        {
+            Error(L"Failed to enumerate screen size!");
+            return false;
+        }
+        
+
+        if ( !InitWindow(screen_x, screen_y, fullscreen ) )
+        {
+            Error(L"Failed to create window!");
+            return false;
+        }
+
+        if ( !InitDirect3D(fullscreen) )
+        {
+            Error(L"Failed to init DirectX!");
+            return false;
+        }
+    }
+    else
     {
-        Error(L"Failed to init DirectX!");
-        return false;
+        if ( !InitWindow(SCREEN_SIZE_X, SCREEN_SIZE_Y, FULLSCREEN) )
+        {
+            Error(L"Failed to create window!");
+            return false;
+        }
+
+        if ( !InitDirect3D(FULLSCREEN) )
+        {
+            Error(L"Failed to init DirectX!");
+            return false;
+        }
     }
 
     return true;
@@ -153,6 +197,33 @@ bool CEngine::InitWindow(int x, int y, bool fullscreen)
     return true;
 }
 
+void CEngine::EnumerateDevice()
+{
+    const D3DFORMAT fmts[] =    {      D3DFMT_A1R5G5B5,      D3DFMT_A2R10G10B10,      D3DFMT_A8R8G8B8,      D3DFMT_R5G6B5,      D3DFMT_X1R5G5B5,      D3DFMT_X8R8G8B8,   };   
+    const int nBits[] = {16, 32, 32, 16, 16, 32};   
+    const int nNumFormats = 6;   
+    
+    ScreenMode theMode;   
+    
+    m_vModes.clear();   
+    
+    for(int i=0; i<nNumFormats; ++i)   
+    {      
+        UINT nCount = m_pd3d->GetAdapterModeCount(D3DADAPTER_DEFAULT,fmts[i]);      
+        
+        for(UINT j=0; j<nCount; ++j)      
+        {         
+            if(SUCCEEDED(m_pd3d->EnumAdapterModes(D3DADAPTER_DEFAULT,fmts[i],j,&theMode.theMode)))         
+            {            
+                theMode.fmt = fmts[i];            
+                theMode.nBits = nBits[i];            
+                m_vModes.push_back(theMode);
+
+            }     
+        }   
+    }
+}
+
 bool CEngine::InitDirect3D(bool fullscreen)
 {
     if (m_pd3d == NULL)
@@ -164,7 +235,7 @@ bool CEngine::InitDirect3D(bool fullscreen)
         }
     }
 
-    //EnumerateDisplayMode();
+    //EnumerateDevice();
 
     D3DDISPLAYMODE d3ddm;
 
@@ -197,11 +268,11 @@ bool CEngine::InitDirect3D(bool fullscreen)
 
     full_params.BackBufferWidth         = m_iScreenX;
     full_params.BackBufferHeight        = m_iScreenY;
-    full_params.BackBufferFormat        = D3DFMT_A8R8G8B8;
+    full_params.BackBufferFormat        = D3DFMT_X8R8G8B8;
     full_params.BackBufferCount         = 1;
 
-    window_params.MultiSampleType         = D3DMULTISAMPLE_8_SAMPLES;
-    window_params.MultiSampleQuality      = 0;
+    full_params.MultiSampleType         = D3DMULTISAMPLE_8_SAMPLES;
+    full_params.MultiSampleQuality      = 0;
 
     full_params.SwapEffect              = D3DSWAPEFFECT_DISCARD;
     full_params.hDeviceWindow           = m_hwnd;
@@ -210,7 +281,7 @@ bool CEngine::InitDirect3D(bool fullscreen)
     full_params.AutoDepthStencilFormat  = D3DFMT_D32;
     full_params.Flags = 0;
 
-    full_params.FullScreen_RefreshRateInHz = 60; /* FullScreen_RefreshRateInHz must be zero for Windowed mode */
+    full_params.FullScreen_RefreshRateInHz = 60;
     full_params.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 
     D3DPRESENT_PARAMETERS params = fullscreen ? full_params : window_params;
@@ -237,7 +308,9 @@ bool CEngine::InitDirect3D(bool fullscreen)
 
     if( FAILED( hres ) )
     {
-        Error(L"Failed to create D3D device!");
+        String msg = String(L"Failed to create D3D device! Error: ") + DXGetErrorString(hres);
+        Error(msg);  
+
         return false;
     }
 
@@ -252,9 +325,12 @@ bool CEngine::InitDirect3D(bool fullscreen)
         return false;
     }
 
-    m_pLogoSprite = new CSprite(L"logo.bmp");
-    m_pSplashSprite = new CSprite(L"splash.bmp");
-
+    if (!IsScreenSaver() && ShouldRenderSplashes() )
+    {
+        m_pLogoSprite = new CSprite(L"logo.bmp");
+        m_pSplashSprite = new CSprite(L"splash.bmp");
+    }
+    
     return true;
 }
 
@@ -358,8 +434,8 @@ bool CEngine::ResetDirect3D(bool fullscreen)
 
 void CEngine::CreateSystems()
 {
-    AddGameSystem( new CSoundSystem() );
-    AddGameSystem( new CInput() );
+    AddGameSystem( Sound() );
+    AddGameSystem( Input() );
 }
 
 bool CEngine::InitSystems()
@@ -387,10 +463,7 @@ void CEngine::Start()
         m_pGame->PreStart();
     }
 
-    if (g_pGlobalTimer)
-    {
-        g_pGlobalTimer->Start();
-    }
+    Timer()->Start();
 
     m_tProfileTimer.Start();
 
@@ -494,7 +567,7 @@ void CEngine::FrameAdvance()
         }
         return;
     }
-    else if (!m_bGameStarted)
+    else if (m_pGame != NULL && !m_bGameStarted)
     {
         m_bGameStarted = true;
         m_pGame->Start();
@@ -517,7 +590,7 @@ void CEngine::FrameAdvance()
         PROFILE_END();
     PROFILE_END();
 
-    if ( g_pInput->KeyReleased( VK_F2 ) )
+    if ( Input()->KeyReleased( VK_F2 ) )
     {
         ChangeWindow();
     }
@@ -682,17 +755,8 @@ void CEngine::ChangeWindow()
     g_bChangingWindow = false;
 }
 
-LRESULT CALLBACK CEngine::MessagePump(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK CEngine::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-//#define PAINTTEST
-
-#ifdef PAINTTEST
-    HDC hdc;
-    PAINTSTRUCT ps;
-
-    String text(L"Intermission, brb in 5 minutes");
-#endif
-
     switch (message)
     {
     case WM_CREATE:
@@ -712,14 +776,17 @@ LRESULT CALLBACK CEngine::MessagePump(HWND hwnd, UINT message, WPARAM wParam, LP
             return 0;
         }
         
+#ifndef SCREENSAVER
     case WM_KEYDOWN:
         if ((lParam & 1<<30) == 0)
         {
-            g_pInput->SetKeyDown(wParam);
+            Input()->SetKeyDown(wParam);
         }
+
         return (0);
+
     case WM_KEYUP:
-        g_pInput->SetKeyUp(wParam);
+        Input()->SetKeyUp(wParam);
 
         if (wParam == VK_ESCAPE)
         {
@@ -727,7 +794,14 @@ LRESULT CALLBACK CEngine::MessagePump(HWND hwnd, UINT message, WPARAM wParam, LP
         }
 
         return (0);
-    
+#else
+    case WM_KEYDOWN:
+    case WM_KEYUP:
+    case WM_MOUSEMOVE:
+        PostQuitMessage(0);
+        return (0);
+#endif
+
     case WM_CLOSE:
     case WM_DESTROY:
         if (!g_bChangingWindow)
@@ -738,7 +812,7 @@ LRESULT CALLBACK CEngine::MessagePump(HWND hwnd, UINT message, WPARAM wParam, LP
         return (0);
 
     default:
-        return DefWindowProc (hwnd, message, wParam, lParam);
+        return DefWindowProc(hwnd, message, wParam, lParam);
     }
 }
 
@@ -786,6 +860,26 @@ void CEngine::OnLostDevice()
                 pFont->Release();
                 continue;
             }
+
+            res = pUnknown->QueryInterface(IID_ID3DXEffect, &pObject);
+
+            if (SUCCEEDED(res) && pObject != NULL)
+            {
+                ID3DXEffect *pEffect = (ID3DXEffect *)pObject;
+                pEffect->OnLostDevice();
+                pEffect->Release();
+                continue;
+            }
+
+            res = pUnknown->QueryInterface(IID_ID3DXMesh, &pObject);
+
+            if (SUCCEEDED(res) && pObject != NULL)
+            {
+                ID3DXMesh *pMesh = (ID3DXMesh *)pObject;
+                pMesh->Release();
+                continue;
+            }
+
         }
     }
 }
@@ -832,6 +926,16 @@ void CEngine::OnResetDevice()
                 pFont->Release();
                 continue;
             }
+
+            res = pUnknown->QueryInterface(IID_ID3DXEffect, &pObject);
+
+            if (SUCCEEDED(res) && pObject != NULL)
+            {
+                ID3DXEffect *pEffect = (ID3DXEffect *)pObject;
+                pEffect->OnResetDevice();
+                pEffect->Release();
+                continue;
+            }
         }
 
     }
@@ -865,13 +969,18 @@ void CEngine::Destroy()
         {
             m_vecGameSystems[i]->Destroy();
 
-            Zap(m_vecGameSystems[i]);
+            //Zap(m_vecGameSystems[i]);
         }
     }
 
     m_vecGameSystems.clear();
 
     g_pTextureLoader->Reset();
+
+    if (m_pd3ddev != NULL)
+    {
+        m_pd3ddev->Release();
+    }
 
     if (m_pd3d != NULL)
     {
@@ -898,7 +1007,7 @@ void CEngine::Message( String msg )
 
 void CEngine::RenderSplashScreens()
 {
-    if ( g_pInput->KeyPressed(VK_SPACE) )
+    if ( Input()->KeyPressed(VK_SPACE) )
     {
         m_iSplashCount = 2;
         m_pStartupSound->Stop();
@@ -908,13 +1017,13 @@ void CEngine::RenderSplashScreens()
     D3DXVECTOR3 center( 0.5f*SPLASH_IMAGE_X, 0.5f*SPLASH_IMAGE_Y, 0.0f );
     D3DXVECTOR3 position( 0.5f*m_iScreenX, 0.5f*m_iScreenY, 0.0f );
 
-    g_pCamera->Update();
+    Camera()->Update();
 
     if (m_iSplashCount == 0)
     {
         if (!m_tFadeTimer.IsStarted())
         {
-            m_pStartupSound = g_pSound->CreateSample(L"startup.wav");
+            m_pStartupSound = Sound()->CreateSample(L"startup.wav");
             m_pStartupSound->Play();
 
             m_tFadeTimer.Start();

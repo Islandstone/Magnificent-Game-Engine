@@ -26,13 +26,19 @@
 
 #include "sprite.h"
 
+struct ScreenMode
+{   
+    D3DDISPLAYMODE theMode;   
+    D3DFORMAT      fmt;   
+    int            nBits;
+};
+
 using namespace std;
 
 class CEngine 
 {
 private:
     CEngine();
-    //~CEngine();
 
 public:
     // Singleton accessor for the engine
@@ -89,8 +95,8 @@ public:
 
     void ChangeWindow();
 
-    //void RegisterGameFactory(IGameFactory* factory) { g_pGameFactory = factory; }
-    static LRESULT CALLBACK MessagePump(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+    static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+    static LRESULT CALLBACK ScreenSaverProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     inline bool HasFailed() { return m_bFailed; }
     inline void SetFailed() { m_bFailed = true; }
@@ -108,6 +114,10 @@ protected:
     void CreateSystems();
     bool InitSystems();
     bool InitDirect3D(bool fullscreen);
+    void EnumerateDevice();
+
+    vector<ScreenMode> m_vModes;
+    ScreenMode fullscreenMode;
 
 private:
 
@@ -126,7 +136,7 @@ private:
 
     // DirectX 9 Objects
     LPDIRECT3D9                     m_pd3d; // It's not safe to use the pointer container on this
-    CComPtr<IDirect3DDevice9>       m_pd3ddev;
+    IDirect3DDevice9*               m_pd3ddev;
 
     // Splash screen resources
     CSprite                         *m_pLogoSprite;
@@ -163,8 +173,6 @@ private:
     
     bool m_bFailed; // True if the engine has encountered a fatal error
 };
-
-extern CEngine* g_sInstance;
 
 extern inline CEngine* Engine()
 {

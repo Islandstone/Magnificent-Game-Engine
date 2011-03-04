@@ -35,7 +35,10 @@ private:
     bool m_bLocked;
 };
 
-extern CTimer *g_pGlobalTimer;
+extern inline CTimer* Timer()
+{
+    return CTimer::GlobalTimer();
+}
 
 class CFadeTimer : public CTimer
 {

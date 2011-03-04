@@ -3,18 +3,20 @@
 
 #include "game_systems.h"
 #include "base.h"
-#include "fmod.hpp"
 #include <vector>
 
-using namespace FMOD;
+#ifdef ENABLE_FMOD
+    #include "fmod.hpp"
+#endif
+
 using namespace std;
 
 class CSample;
 
 class CSoundSystem : public CGameSystem
 {
-public:
     CSoundSystem();
+public:
 
     static CSoundSystem* GetInstance()
     {
@@ -27,7 +29,7 @@ public:
 
     void Update();
 
-    const String GetName() { return String(L"CSoundSystem"); }
+    const String GetName() { return L"CSoundSystem"; }
     
     CSample* GetSampleByName(const String filename);
     CSample* CreateSample(const String filename);
@@ -37,21 +39,30 @@ public:
 
     void StopAllSounds() {}
 
-    System* FMODSystem() { return m_pSystem; }
+#ifdef ENABLE_FMOD
+    FMOD::System* FMODSystem() { return m_pSystem; }
+#endif
 
 protected:
 private:
-    System    *m_pSystem;
 
-    //vector<Sound*> m_vSounds;
+#ifdef ENABLE_FMOD
+    FMOD::System    *m_pSystem;
     vector<CSample*> m_vSamples;
+#endif
+
 
     bool m_bHasPlayedTest;
 
     float m_flLastUpdateTime;
 };
 
-extern CSoundSystem *g_pSound;
+extern inline CSoundSystem* Sound()
+{
+    return CSoundSystem::GetInstance();
+}
+
+//extern CSoundSystem *g_pSound;
 
 class CSample
 {
@@ -63,7 +74,10 @@ public:
 
     String GetFilename() { return m_sFilename; }
     
+#ifdef ENABLE_FMOD
     bool IsValid() { return m_pSound != NULL; }
+#endif
+
     bool IsPlaying() { return false; }
 
 private:
@@ -71,13 +85,16 @@ private:
     CSample(String filename);
 
     void    LoadFile();
-    //void    Register(); 
 
-    Sound  *m_pSound;
-    Channel *m_pChannel;
+#ifdef ENABLE_FMOD
+    FMOD::Sound  *m_pSound;
+    FMOD::Channel *m_pChannel;
+#endif
+
     String  m_sFilename;
-    //bool m_bPaused;
 };
+
+#ifdef ENABLE_FMOD
 
 static String FMOD_ErrorString(FMOD_RESULT errcode)
 {
@@ -156,6 +173,7 @@ static String FMOD_ErrorString(FMOD_RESULT errcode)
     default :                             return L"Unknown error.";
     };
 }
+#endif // ENABLE_FMOD
 
 
 #endif // SOUND_H

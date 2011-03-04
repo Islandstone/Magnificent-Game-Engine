@@ -29,12 +29,10 @@ void CGame::PreStart()
     D3DXMatrixIdentity(&mat);
     Engine()->GetDevice()->SetTransform( D3DTS_WORLD, &mat);
 
-    /*
-    g_pCamera->SetPosition(0,0);
-    g_pCamera->Update();
-    */
-
-    pClock->Init();
+    if (pClock != NULL)
+    {
+        pClock->Init();
+    }
 }
 
 void CGame::Start()
@@ -47,7 +45,10 @@ void CGame::Reset()
 
 void CGame::Think()
 { 
-    pClock->Think();
+    if (pClock != NULL)
+    {
+        pClock->Think();
+    }
 }
 
 void CGame::Render()
@@ -57,14 +58,22 @@ void CGame::Render()
     D3DXMatrixIdentity(&mat);
     Engine()->GetDevice()->SetTransform( D3DTS_WORLD, &mat);
 
-    g_pCamera->SetPosition(0,0);
-    g_pCamera->Update();
+    Camera()->SetPosition(0,0);
+    Camera()->Update();
 
-    pClock->Render();
+    if (pClock != NULL)
+    {
+        pClock->Render();
+    }
 }
 
 void CGame::Destroy()
 {
-    pClock->Destroy();
+    if (pClock != NULL)
+    {
+        pClock->Destroy();
+    }
+
+    delete pClock;
 }
 

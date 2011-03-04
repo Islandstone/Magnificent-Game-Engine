@@ -1,27 +1,28 @@
 #include "base.h"
 #include "sound.h"
 #include "engine.h"
-#include "fmod.hpp"
 #include "input.h"
 
-#pragma deprecated( g_pSound )
-CSoundSystem *g_pSound = NULL;
+#ifdef ENABLE_FMOD
 
-using namespace FMOD;
+#include "fmod.hpp"
 
 String FMOD_ErrorString(FMOD_RESULT errcode);
 
 #ifdef DEBUG
+
 #define ERRCHECK(x) if (x != FMOD_OK) { Engine()->Error( FMOD_ErrorString(x) ); return false; }
 #else
 #define ERRCHECK(x) if (x != FMOD_OK) { Engine()->Error( FMOD_ErrorString(x) ); return false; }
 #endif
 
+#endif
+
 CSoundSystem::CSoundSystem()
 {
-    g_pSound = this;
+#ifdef ENABLE_FMOD
     m_pSystem = NULL;
-
+#endif
     m_bHasPlayedTest = false;
 }
 
@@ -31,6 +32,8 @@ bool CSoundSystem::Init()
     *   Large portions of this code is based on the initialization code
     *   provided with the FMOD installation
     */
+
+#ifdef ENABLE_FMOD
 
     FMOD_RESULT      result;
     unsigned int     version;
@@ -106,21 +109,26 @@ bool CSoundSystem::Init()
         ERRCHECK(result);
     }
 
+#endif
+
     return true;
 }
 
 void CSoundSystem::Play(const String filename)
 {
+#ifdef ENABLE_FMOD
     CSample* pSample = CreateSample(filename);
 
     if (pSample != NULL)
     {
         pSample->Play();
     }
+#endif
 }
 
 CSample* CSoundSystem::GetSampleByName(const String filename)
 {
+#ifdef ENABLE_FMOD
     for (unsigned int i = 0; i < m_vSamples.size(); i++)
     {
         if ( m_vSamples[i] != NULL && m_vSamples[i]->GetFilename() == filename )
@@ -128,14 +136,14 @@ CSample* CSoundSystem::GetSampleByName(const String filename)
             return m_vSamples[i];
         }
     }
-
+#endif
     return NULL;
 }
 
 CSample* CSoundSystem::CreateSample(const String filename)
 {
     CSample* pSample = GetSampleByName(filename);
-
+#ifdef ENABLE_FMOD
     if (pSample != NULL)
     {
         return pSample;
@@ -144,24 +152,25 @@ CSample* CSoundSystem::CreateSample(const String filename)
     pSample = new CSample(filename);
 
     m_vSamples.push_back(pSample);
-
+#endif
     return pSample;
 }
 
 void CSoundSystem::Update()
 {
+#ifdef ENABLE_FMOD
     m_pSystem->update();
 
-    if (g_pInput->KeyReleased(VK_HOME) && !m_bHasPlayedTest)
+    if ( Input()->KeyReleased(VK_HOME) && !m_bHasPlayedTest)
     {
         Play(L"startup.mp3");
         m_bHasPlayedTest = true;
     }
     
-    if (g_pInput->KeyHeld(VK_SUBTRACT))
+    if ( Input()->KeyHeld(VK_SUBTRACT))
     {
         FMOD_RESULT res;
-        float curtime = g_pGlobalTimer->CurrentTime();
+        float curtime = Timer()->CurrentTime();
         //Engine()->Debug(L"Decreasing volume\n");
         
         FMOD::ChannelGroup *pChannelGroup;
@@ -188,10 +197,10 @@ void CSoundSystem::Update()
         }
     }
     
-    if (g_pInput->KeyHeld(VK_ADD))
+    if ( Input()->KeyHeld(VK_ADD))
     {
         FMOD_RESULT res;
-        float curtime = g_pGlobalTimer->CurrentTime();
+        float curtime = Timer()->CurrentTime();
 
         FMOD::ChannelGroup *pChannelGroup;
         res = m_pSystem->getMasterChannelGroup(&pChannelGroup);
@@ -217,11 +226,15 @@ void CSoundSystem::Update()
         }
     }
 
-    m_flLastUpdateTime = g_pGlobalTimer->CurrentTime();
+    m_flLastUpdateTime = Timer()->CurrentTime();
+
+#endif
 }
 
 void CSoundSystem::Destroy()
 {
+#ifdef ENABLE_FMOD
+
     for (unsigned int i = 0; i < m_vSamples.size(); i++)
     {
         Zap( m_vSamples[i] );
@@ -230,28 +243,37 @@ void CSoundSystem::Destroy()
     m_vSamples.clear();
 
     m_pSystem->release();
+
+#endif
 }
 
 CSample::CSample(String filename)
 {
     m_sFilename = filename;
+    
+#ifdef ENABLE_FMOD
     m_pSound = NULL;
     m_pChannel = NULL;
+#endif
 
     LoadFile();
 }
 
 CSample::~CSample()
 {
+#ifdef ENABLE_FMOD
     if (m_pSound != NULL)
     {
         m_pSound->release();
         m_pSound = NULL;
     }
+#endif
+    m_sFilename.clear();
 }
 
 void CSample::LoadFile()
 {
+#ifdef ENABLE_FMOD
     FMOD_RESULT result = FMOD_OK;
     int buffer_size = m_sFilename.size() + 1;
     char *pszFilename = (char *)malloc( buffer_size );
@@ -259,7 +281,7 @@ void CSample::LoadFile()
 
     wcstombs_s(&temp, pszFilename, buffer_size, m_sFilename.c_str(), buffer_size );
 
-    result = g_pSound->FMODSystem()->createStream(pszFilename, FMOD_DEFAULT | FMOD_CREATESTREAM, NULL, &m_pSound);
+    result = Sound()->FMODSystem()->createStream(pszFilename, FMOD_DEFAULT | FMOD_CREATESTREAM, NULL, &m_pSound);
 
     if (result != FMOD_OK)
     {
@@ -273,10 +295,12 @@ void CSample::LoadFile()
     }
 
     Zap(pszFilename);
+#endif
 }
 
 void CSample::Play(bool paused)
 {
+#ifdef ENABLE_FMOD
     FMOD_RESULT result;
 
     if (m_pSound == NULL)
@@ -284,7 +308,7 @@ void CSample::Play(bool paused)
         return;
     }
 
-    result = g_pSound->FMODSystem()->playSound(FMOD_CHANNEL_FREE, m_pSound, paused, &m_pChannel);
+    result = Sound()->FMODSystem()->playSound(FMOD_CHANNEL_FREE, m_pSound, paused, &m_pChannel);
 
     if (result != FMOD_OK)
     {
@@ -296,12 +320,15 @@ void CSample::Play(bool paused)
         Engine()->Debug(String(L"Failed to load sound file ") );
 #endif
     }
+#endif
 }
 
 void CSample::Stop()
 {
+#ifdef ENABLE_FMOD
     if (m_pChannel != NULL)
     {
         m_pChannel->stop();
     }
+#endif
 }
